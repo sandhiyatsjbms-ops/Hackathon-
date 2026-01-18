@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Health Assistant</title>
+<style>
+/* --- Body & Container --- */
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to right, #d7e1ec, #f0f4f8);
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.container {
+  width: 520px;
+  max-width: 95%;
+  background: #fff;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+/* --- Heading --- */
+h1 {
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+p {
+  color: #555;
+  margin-bottom: 20px;
+}
+
+/* --- Symptom Checkboxes --- */
+.symptoms-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+.symptoms-list label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+/* --- Button --- */
+button {
+  padding: 12px 30px;
+  border: none;
+  background-color: #3498db;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: background 0.3s, transform 0.2s;
+}
+button:hover { 
+  background-color: #2980b9; 
+  transform: scale(1.05);
+}
+
+/* --- Output --- */
+#output {
+  margin-top: 25px;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.5s ease;
+}
+
+/* Show output */
+#output.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- Severity Classes --- */
+.mild { background-color: #d4edda; color: #155724; }
+.moderate { background-color: #fff3cd; color: #856404; }
+.severe { background-color: #f8d7da; color: #721c24; }
+
+/* --- Tip Card --- */
+.tip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  border-radius: 12px;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateX(-20px);
+  animation: slideIn 0.5s forwards;
+}
+@keyframes slideIn {
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* --- Icons --- */
+.icon {
+  font-weight: bold;
+  font-size: 20px;
+}
+
+/* --- Severity Bar --- */
+.severity-bar {
+  height: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  transition: all 0.5s ease;
+}
+.severity-bar.mild { background-color: #28a745; }
+.severity-bar.moderate { background-color: #ffc107; }
+.severity-bar.severe { background-color: #dc3545; }
+
+/* --- Responsive --- */
+@media(max-width: 520px){
+  .symptoms-list { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Smart Health Assistant</h1>
+  <p>Select your symptoms to get detailed guidance</p>
+
+  <div class="symptoms-list">
+    <label><input type="checkbox" value="fever"> Fever</label>
+    <label><input type="checkbox" value="cough"> Cough</label>
+    <label><input type="checkbox" value="cold"> Cold</label>
+    <label><input type="checkbox" value="headache"> Headache</label>
+    <label><input type="checkbox" value="fatigue"> Fatigue</label>
+    <label><input type="checkbox" value="body ache"> Body Ache</label>
+    <label><input type="checkbox" value="chest pain"> Chest Pain</label>
+    <label><input type="checkbox" value="shortness of breath"> Shortness of Breath</label>
+    <label><input type="checkbox" value="dizziness"> Severe Dizziness</label>
+    <label><input type="checkbox" value="high blood pressure"> High Blood Pressure</label>
+    <label><input type="checkbox" value="diabetes"> Diabetes</label>
+    <label><input type="checkbox" value="stomach pain"> Stomach Pain</label>
+    <label><input type="checkbox" value="allergy"> Allergy / Rash</label>
+  </div>
+
+  <button onclick="checkHealth()">Check Health</button>
+
+  <div class="severity-bar" id="severityBar"></div>
+  <div id="output"></div>
+</div>
+
+<script>
+function checkHealth() {
+  const checkboxes = document.querySelectorAll('.symptoms-list input[type="checkbox"]');
+  const selected = [];
+  checkboxes.forEach(cb => { if(cb.checked) selected.push(cb.value); });
+
+  const output = document.getElementById("output");
+  const severityBar = document.getElementById("severityBar");
+  output.innerHTML = "";
+  output.className = "";
+  severityBar.className = "severity-bar";
+
+  let severityClass = "";
+  let icon = "";
+  const tips = [];
+
+  if(selected.length === 0){
+    severityClass = "moderate";
+    icon = "ℹ️";
+    tips.push("Please select at least one symptom.");
+  }
+  else if(selected.some(sym => ["chest pain","shortness of breath","dizziness"].includes(sym))){
+    severityClass = "severe";
+    icon = "❗";
+    tips.push("Seek immediate medical attention!");
+  }
+  else if(selected.some(sym => ["high blood pressure","diabetes"].includes(sym))){
+    severityClass = "moderate";
+    icon = "⚠️";
+    selected.forEach(sym => {
+      if(sym === "high blood pressure") tips.push("Monitor BP and follow your doctor's advice.");
+      if(sym === "diabetes") tips.push("Check sugar levels and follow diet/medication plan.");
+    });
+  }
+  else{
+    severityClass = "mild";
+    icon = "✅";
+    selected.forEach(sym => {
+      if(sym === "fever") tips.push("Rest, hydrate, monitor temperature.");
+      if(sym === "cough") tips.push("Avoid cold drinks, rest, monitor symptoms.");
+      if(sym === "cold") tips.push("Stay warm, drink fluids, rest.");
+      if(sym === "headache") tips.push("Drink water, rest, reduce stress.");
+      if(sym === "fatigue") tips.push("Get enough sleep and light exercise.");
+      if(sym === "body ache") tips.push("Rest and mild pain relief if needed.");
+      if(sym === "stomach pain") tips.push("Avoid spicy food, stay hydrated, rest.");
+      if(sym === "allergy") tips.push("Avoid allergens and consult doctor if worsens.");
+    });
+  }
+
+  // Add severity class
+  output.className = severityClass + " show";
+  severityBar.classList.add(severityClass);
+
+  // Show icon & guidance
+  tips.forEach((tip, index) => {
+    const div = document.createElement("div");
+    div.className = "tip";
+    div.style.animationDelay = `${index * 0.15}s`;
+    div.innerHTML = `<span class="icon">${icon}</span> ${tip}`;
+    output.appendChild(div);
+  });
+
+  // Reset checkboxes
+  checkboxes.forEach(cb => cb.checked = false);
+}
+</script>
+
+</body>
+</html>
